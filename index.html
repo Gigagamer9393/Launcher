@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GigarazorLp Launcher</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+:root{--pink:#ff00ff;--cyan:#00ffff;--bg:#0d0d0d;}
+*{box-sizing:border-box;} html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:'Press Start 2P',cursive;color:#fff;overflow:hidden;}
+.section{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .5s;}
+.hidden{display:none;}
+.neon-text{font-size:3rem;color:var(--pink);text-align:center;text-shadow:0 0 5px var(--pink),0 0 10px var(--pink),0 0 20px var(--pink),0 0 40px var(--pink);animation:pulse 1.5s infinite alternate, shake .5s infinite;margin-bottom:30px;}
+@keyframes pulse{0%{text-shadow:0 0 5px var(--pink)}50%{text-shadow:0 0 20px var(--pink),0 0 40px var(--pink)}100%{text-shadow:0 0 5px var(--pink)}}
+@keyframes shake{0%{transform:translate(0,0) rotate(0deg);}25%{transform:translate(-5px,5px) rotate(-2deg);}50%{transform:translate(5px,-5px) rotate(2deg);}75%{transform:translate(-5px,5px) rotate(-2deg);}100%{transform:translate(0,0) rotate(0deg);}}
+.neon-button{padding:16px 40px;border:2px solid var(--pink);color:var(--pink);background:transparent;text-decoration:none;text-transform:uppercase;cursor:pointer;margin:10px;animation:pulse 1s infinite alternate;font-size:0.85rem;display:inline-block;position:relative;}
+.neon-button:hover{color:var(--cyan);border-color:var(--cyan);}
+.status-text{font-size:0.85rem;margin-top:12px;text-align:center;transition:color .25s;}
+.progress-wrap{width:420px;max-width:80vw;height:22px;border-radius:12px;overflow:hidden;border:3px solid var(--pink);box-shadow:0 0 18px var(--pink);margin-top:18px;background:rgba(255,255,255,0.02);position:relative;}
+.progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--pink),var(--cyan));box-shadow:0 0 20px var(--pink),0 0 40px var(--cyan);transition:width .1s linear;}
+.checking{animation:checkBlink 1s infinite alternate;font-size:1rem;margin-top:12px;text-shadow:0 0 8px var(--pink);}
+@keyframes checkBlink{0%{opacity:1;color:var(--pink);text-shadow:0 0 12px var(--pink)}50%{opacity:.45;color:var(--cyan);text-shadow:0 0 12px var(--cyan)}100%{opacity:1;color:var(--pink)}}
+body::before{content:'';position:absolute;left:-50%;top:-50%;width:200%;height:200%;background:radial-gradient(circle at center,#8a2be2,rgba(13,13,13,1),var(--pink));z-index:-2;animation:rotateBG 30s linear infinite;mix-blend-mode:screen;}
+@keyframes rotateBG{0%{transform:rotate(0) scale(1);}50%{transform:rotate(180deg) scale(1.1);}100%{transform:rotate(360deg) scale(1);}}
+.shape{position:absolute;border-radius:50%;opacity:.75;mix-blend-mode:screen;animation:float 5s linear infinite;}
+@keyframes float{0%{transform:translate(0,0) rotate(0deg);}50%{transform:translate(40px,-40px) rotate(180deg);}100%{transform:translate(0,0) rotate(360deg);}}
+.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle 1.5s infinite alternate;}
+@keyframes twinkle{0%{opacity:.1}50%{opacity:1}100%{opacity:.1}}
+.neon-bar{position:absolute;width:150px;height:4px;background:var(--pink);box-shadow:0 0 10px var(--pink);top:0;animation:moveBar 3s linear infinite;mix-blend-mode:screen;}
+@keyframes moveBar{0%{left:-200px}100%{left:100vw}}
+.small-muted{font-size:0.7rem;color:#aaa;margin-top:8px;}
+body{cursor:none;}
+@media (max-width:520px){.neon-text{font-size:1.6rem;margin-bottom:20px}.progress-wrap{width:85%}.neon-button{padding:12px 18px;font-size:0.75rem}}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home" class="section">
+  <div class="neon-text">GigarazorLp Launcher</div>
+  <button class="neon-button" onclick="showLauncher()">Go to Launcher</button>
+  <p class="small-muted">Tip: Press ↑↑↓↓←→←→ B A for a surprise</p>
+</div>
+
+<!-- LAUNCHER -->
+<div id="launcher" class="section hidden">
+  <div class="neon-text">Download & Links</div>
+
+  <!-- DOWNLOAD BUTTON -->
+<a id="downloadLink" href="https://os5.mycloud.com/action/share/f5617410-afa0-42a4-917e-70e6ddb8bb9a" target="_blank" class="neon-button">
+  Download Launcher <span id="statusInline" style="color:var(--pink);margin-left:8px">(Waiting)</span>
+</a>
+
+
+  <!-- PROGRESS BAR -->
+  <div class="progress-wrap" id="progressWrap" aria-hidden="true">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <p id="checkingText" class="checking">🔄 Checking for Updates…</p>
+  <p id="finalStatus" class="status-text" style="display:none"></p>
+
+  <!-- LINKS -->
+  <a id="discordLink" href="https://discord.com/invite/UGqxpbrcux" target="_blank" class="neon-button">Join Discord</a>
+  <a id="youtubeLink" href="https://www.youtube.com/@gigarazorlp1911" target="_blank" class="neon-button">YouTube</a>
+  <button class="neon-button" onclick="showHome()">Back</button>
+  <p id="lastChecked" class="small-muted" style="margin-top:10px"></p>
+</div>
+
+<script>
+/* NAVIGATION */
+function showLauncher(){
+  document.getElementById('home').classList.add('hidden');
+  document.getElementById('launcher').classList.remove('hidden');
+  startCheckingSequence();
+}
+function showHome(){
+  document.getElementById('launcher').classList.add('hidden');
+  document.getElementById('home').classList.remove('hidden');
+}
+
+/* UPDATE CHECK */
+const isUpdated = true; // true = Updated, false = Not Updated
+
+function startCheckingSequence(){
+  const progressBar = document.getElementById('progressBar');
+  const progressWrap = document.getElementById('progressWrap');
+  const checkingText = document.getElementById('checkingText');
+  const finalStatus = document.getElementById('finalStatus');
+  const statusInline = document.getElementById('statusInline');
+  const lastChecked = document.getElementById('lastChecked');
+
+  progressBar.style.width = '0%';
+  progressWrap.style.display = 'block';
+  checkingText.style.display = 'block';
+  finalStatus.style.display = 'none';
+  statusInline.textContent='(Checking...)';
+  statusInline.style.color='var(--pink)';
+
+  let step=0, max=100, intervalMs=100; // 10 Sekunden
+  const loader=setInterval(()=>{
+    step++;
+    progressBar.style.width = (step/max*100) + '%';
+    if(step>=max){
+      clearInterval(loader);
+      setTimeout(()=>{showFinalStatus();},200);
+    }
+  },intervalMs);
+
+  function showFinalStatus(){
+    const now=new Date();
+    const when = now.toLocaleDateString('en-GB')+' – '+now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+
+    checkingText.style.display='none';
+    finalStatus.style.display='block';
+
+    if(isUpdated){
+      statusInline.style.color='lime';
+      statusInline.textContent=`(Updated ${when})`;
+      finalStatus.style.color='lime';
+      finalStatus.innerHTML=`✅ Launcher is up to date!<br><span style="font-size:0.7rem;color:#bfffbf">Last check: ${when}</span>`;
+    } else {
+      statusInline.style.color='red';
+      statusInline.textContent=`(Not Updated ${when})`;
+      finalStatus.style.color='#ff5555';
+      finalStatus.innerHTML=`❌ Not Updated.<br><span style="font-size:0.7rem;color:#ffbdbd">Please report on Discord or click Token in the Launcher.</span>`;
+    }
+    lastChecked.textContent = 'Last check: ' + when;
+  }
+}
+
+/* DECORATIONS & EFFECTS */
+const colors=['#ff00ff','#00ffff','#ff007f','#8a2be2','#ffb300'];
+for(let i=0;i<30;i++){
+  const s=document.createElement('div');s.className='shape';
+  const size=Math.random()*40+8;
+  s.style.width=s.style.height=size+'px';
+  s.style.background=colors[Math.floor(Math.random()*colors.length)];
+  s.style.left=Math.random()*100+'vw';s.style.top=Math.random()*100+'vh';
+  s.style.animationDuration=(Math.random()*6+4)+'s';
+  s.style.opacity=0.6;document.body.appendChild(s);
+}
+for(let i=0;i<100;i++){
+  const st=document.createElement('div');st.className='star';
+  st.style.left=Math.random()*100+'vw';
+  st.style.top=Math.random()*100+'vh';
+  st.style.animationDuration=(Math.random()*2+.5)+'s';
+  document.body.appendChild(st);
+}
+setInterval(()=>{
+  const bolt=document.createElement('div');
+  bolt.style.position='absolute';bolt.style.width='2px';
+  bolt.style.height=(Math.random()*220+40)+'px';
+  bolt.style.background='#00ffff';bolt.style.left=Math.random()*100+'vw';
+  bolt.style.top=Math.random()*100+'vh';
+  bolt.style.opacity=0.75;
+  bolt.style.boxShadow='0 0 10px #00ffff,0 0 20px #00ffff';
+  bolt.style.mixBlendMode='screen';
+  document.body.appendChild(bolt);
+  setTimeout(()=>bolt.remove(),200);
+},500);
+for(let i=0;i<5;i++){
+  const bar=document.createElement('div');bar.className='neon-bar';
+  bar.style.top=Math.random()*100+'vh';
+  bar.style.animationDuration=(Math.random()*2+2)+'s';
+  document.body.appendChild(bar);
+}
+// Mouse Laser
+document.addEventListener('mousemove',e=>{
+  const laser=document.createElement('div');
+  laser.style.position='absolute';laser.style.width='4px';
+  laser.style.height='4px';
+  laser.style.borderRadius='50%';
+  laser.style.background='#00ffff';
+  laser.style.boxShadow='0 0 10px #00ffff,0 0 20px #00ffff';
+  laser.style.left=e.clientX+'px';
+  laser.style.top=e.clientY+'px';
+  laser.style.pointerEvents='none';
+  laser.style.mixBlendMode='screen';
+  laser.style.animation='laserFade 1s linear forwards';
+  document.body.appendChild(laser);
+  setTimeout(()=>laser.remove(),1000);
+});
+// Sound effect
+function playSound(){const audio=new Audio('https://www.soundjay.com/button/beep-07.wav');audio.volume=0.2;audio.play();}
+document.addEventListener('mousemove',playSound);
+// Konami Code Easter Egg
+let konami=[];const code=[38,38,40,40,37,39,37,39,66,65];
+document.addEventListener('keydown', e=>{
+  konami.push(e.keyCode);
+  if(konami.slice(-10).toString()===code.toString()){
+    alert("💥 NEON RAVE ACTIVATED 💥");
+    for(let i=0;i<50;i++){
+      const eShape=document.createElement('div');eShape.className='shape';
+      const size=Math.random()*50+20;eShape.style.width=eShape.style.height=size+'px';
+      eShape.style.background=colors[Math.floor(Math.random()*colors.length)];
+      eShape.style.left=Math.random()*100+'vw';eShape.style.top=Math.random()*100+'vh';
+      eShape.style.animationDuration=(Math.random()*5+2)+'s';
+      document.body.appendChild(eShape);
+    }
+  }
+});
+</script>
+</body>
+</html>
